@@ -19,7 +19,6 @@ public class MyUserDetailsService implements UserDetailsService {
         User u = userRepo.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        // Spring Security expects roles without the "ROLE_" prefix; it will add that for you
         return org.springframework.security.core.userdetails.User
                 .withUsername(u.getUsername())
                 .password(u.getPassword())

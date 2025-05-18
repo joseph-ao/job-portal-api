@@ -11,18 +11,16 @@ public class SignupRequest {
     private String password;
 
     @NotBlank
-    private String role; // must be "CANDIDATE" or "RECRUITER"
+    private String role;
 
-    // Candidate-specific
     private String firstName;
     private String lastName;
     private String resumeUrl;
 
-    // Shared between Candidate & Recruiter
+
     private String email;
     private String phone;
 
-    // Recruiter-specific
     private String companyName;
 
     public String getUsername() {
@@ -49,7 +47,6 @@ public class SignupRequest {
         this.role = role;
     }
 
-    // Candidate getters/setters
     public String getFirstName() {
         return firstName;
     }
@@ -74,7 +71,6 @@ public class SignupRequest {
         this.resumeUrl = resumeUrl;
     }
 
-    // Shared getters/setters
     public String getEmail() {
         return email;
     }
@@ -91,7 +87,6 @@ public class SignupRequest {
         this.phone = phone;
     }
 
-    // Recruiter getter/setter
     public String getCompanyName() {
         return companyName;
     }

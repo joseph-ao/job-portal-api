@@ -21,20 +21,17 @@ public class RecruiterController {
         this.repo = repo;
     }
 
-    // Create
     @PostMapping
     public ResponseEntity<Recruiter> createRecruiter(@Valid @RequestBody Recruiter recruiter) {
         Recruiter saved = repo.save(recruiter);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // Read All
     @GetMapping
     public List<Recruiter> listRecruiters() {
         return repo.findAll();
     }
 
-    // Read One
     @GetMapping("/{id}")
     public Recruiter getRecruiter(@PathVariable String id) {
         return repo.findById(id)
@@ -43,7 +40,6 @@ public class RecruiterController {
                                 "The recruiter you're searching for isn't found"));
     }
 
-    // Update
     @PutMapping("/{id}")
     public Recruiter updateRecruiter(@PathVariable String id,
                                      @Valid @RequestBody Recruiter incoming) {
@@ -62,7 +58,6 @@ public class RecruiterController {
                                 "The recruiter you want to update isn't found"));
     }
 
-    // Delete
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRecruiter(@PathVariable String id) {
         if (!repo.existsById(id)) {

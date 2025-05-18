@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/jobs")
@@ -29,7 +28,6 @@ public class JobController {
         this.recRepo = recRepo;
     }
 
-    // Create
     @PostMapping
     public ResponseEntity<Job> createJob(@Valid @RequestBody Job job) {
         String email = SecurityContextHolder.getContext()
@@ -43,7 +41,6 @@ public class JobController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // Read All
     @GetMapping
     public Page<Job> listJobs(
             @RequestParam(value = "title", required = false) String title,
@@ -56,7 +53,6 @@ public class JobController {
     }
 
 
-    // Read One
     @GetMapping("/{id}")
     public Job getJob(@PathVariable String id) {
         return jobRepo.findById(id)
@@ -65,7 +61,6 @@ public class JobController {
                                 "The job you're searching for isn't found"));
     }
 
-    // Update
     @PutMapping("/{id}")
     public Job updateJob(@PathVariable String id,
                          @Valid @RequestBody Job incoming) {
@@ -92,7 +87,6 @@ public class JobController {
         return jobRepo.save(existing);
     }
 
-    // Delete
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteJob(@PathVariable String id) {
         Job existing = jobRepo.findById(id)

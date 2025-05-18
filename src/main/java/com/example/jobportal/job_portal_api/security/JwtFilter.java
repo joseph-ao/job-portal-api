@@ -43,7 +43,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } catch (JwtException ex) {
-                // invalid token – we just won’t set Authentication
+                // invalid token – i won’t set Authentication
             }
         }
 

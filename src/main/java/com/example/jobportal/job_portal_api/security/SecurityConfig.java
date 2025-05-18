@@ -28,16 +28,12 @@ public class SecurityConfig {
         JwtFilter jwtFilter = new JwtFilter(jwtUtil, uds);
 
         http
-                // 1) No sessions or CSRF for a stateless JWT API
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 2) Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // a) Public endpoints (signup/login)
                         .requestMatchers("/auth/**").permitAll()
 
-                        // b) Public read-only (anyone can GET lists or single resources)
                         .requestMatchers(HttpMethod.GET,
                                 "/jobs/**",
                                 "/applications/**",
@@ -45,25 +41,23 @@ public class SecurityConfig {
                                 "/recruiters/**"
                         ).permitAll()
 
-                        // c) Job management: only recruiters can POST/PUT/DELETE
+                       // recruiters can POST/PUT/DELETE
                         .requestMatchers(HttpMethod.POST,   "/jobs/**").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.PUT,    "/jobs/**").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("RECRUITER")
 
-                        // d) Application management: only candidates can POST/PUT/DELETE
+                        // candidates can POST/PUT/DELETE
                         .requestMatchers(HttpMethod.POST,   "/applications/**").hasRole("CANDIDATE")
                         .requestMatchers(HttpMethod.PUT,    "/applications/**").hasRole("CANDIDATE")
                         .requestMatchers(HttpMethod.DELETE, "/applications/**").hasRole("CANDIDATE")
 
-                        // e) Candidate profile edits: only candidates can update/delete themselves
+                        // candidates can update/delete themselves
                         .requestMatchers(HttpMethod.PUT,    "/candidates/**").hasRole("CANDIDATE")
                         .requestMatchers(HttpMethod.DELETE, "/candidates/**").hasRole("CANDIDATE")
 
-                        // f) Everything else (e.g. recruiter CRUD, other endpoints) requires a valid JWT
                         .anyRequest().authenticated()
                 )
 
-                // 3) Inject our JWT filter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

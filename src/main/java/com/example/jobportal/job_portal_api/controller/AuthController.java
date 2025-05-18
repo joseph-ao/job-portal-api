@@ -49,7 +49,6 @@ public class AuthController {
                     .body(new JwtResponse("Error: Username is already taken"));
         }
 
-        // 1) Create the profile and populate its fields
         String profileId;
         if ("CANDIDATE".equalsIgnoreCase(req.getRole())) {
             Candidate c = new Candidate();
@@ -57,7 +56,13 @@ public class AuthController {
             c.setLastName(req.getLastName());
             c.setEmail(req.getEmail());
             c.setPhone(req.getPhone());
-            c.setResumeUrl(req.getResumeUrl());
+
+            if (req.getResumeUrl() == null || req.getResumeUrl().isEmpty()) {
+                c.setResumeUrl("http://example.com/default-resume");
+            } else {
+                c.setResumeUrl(req.getResumeUrl());
+            }
+
             profileId = candidateRepo.save(c).getId();
         } else {
             Recruiter r = new Recruiter();
@@ -67,7 +72,6 @@ public class AuthController {
             profileId = recruiterRepo.save(r).getId();
         }
 
-        // 2) Save the User linked to that profile
         User u = new User();
         u.setUsername(req.getUsername());
         u.setPassword(passwordEncoder.encode(req.getPassword()));
@@ -75,7 +79,6 @@ public class AuthController {
         u.setProfileId(profileId);
         userRepo.save(u);
 
-        // 3) Generate JWT
         String token = jwtUtil.generateToken(u.getUsername(), u.getRole());
         return ResponseEntity.ok(new JwtResponse(token));
     }

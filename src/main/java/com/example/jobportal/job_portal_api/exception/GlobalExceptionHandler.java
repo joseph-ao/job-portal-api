@@ -28,11 +28,9 @@ public class GlobalExceptionHandler {
                 "errors", errors
         );
 
-        // Return 400 Bad Request with our body
         return ResponseEntity.badRequest().body(body);
     }
 
-    // 2) Handle not-found and other ResponseStatusException throws
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
         Map<String, Object> body = Map.of(

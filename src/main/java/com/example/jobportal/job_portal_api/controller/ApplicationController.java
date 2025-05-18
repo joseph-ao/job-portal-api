@@ -14,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.time.Instant;
 
 @RestController
 @RequestMapping("/applications")
@@ -30,96 +30,61 @@ public class ApplicationController {
         this.candidateRepo = candidateRepo;
     }
 
-    // Create
     @PostMapping
     public ResponseEntity<Application> createApplication(
             @Valid @RequestBody Application app
     ) {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
+
+        System.out.println("Creating application. Auth email: " + email);
+
         Candidate me = candidateRepo.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.FORBIDDEN, "Only candidates may apply"));
+                .orElseThrow(() -> {
+                    System.out.println("No candidate found for email: " + email);
+                    return new ResponseStatusException(
+                            HttpStatus.FORBIDDEN, "Only candidates may apply");
+                });
+
+        System.out.println("Candidate found: " + me.getId());
 
         app.setCandidateId(me.getId());
+
+        if (app.getStatus() == null || app.getStatus().isEmpty()) {
+            app.setStatus("submitted");
+        }
+
+        if (app.getAppliedAt() == null) {
+            app.setAppliedAt(Instant.now());
+        }
+
         Application saved = appRepo.save(app);
+        System.out.println("Application saved: " + saved.getId());
+
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // Read All for this candidate
     @GetMapping
     public Page<Application> listApplications(
             @RequestParam(value = "status", required = false) String status,
             Pageable pageable
     ) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("Listing applications. Auth email: " + email);
+
         if (status != null && !status.isBlank()) {
             return appRepo.findByStatus(status, pageable);
         }
-        // Or show only the caller’s applications:
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
         Candidate me = candidateRepo.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.FORBIDDEN, "Only candidates may view their applications"));        return appRepo.findByCandidateId(me.getId(), pageable);
+                .orElseThrow(() -> {
+                    System.out.println("No candidate found for email: " + email);
+                    return new ResponseStatusException(
+                            HttpStatus.FORBIDDEN, "Only candidates may view their applications");
+                });
+
+        System.out.println("Candidate found: " + me.getId());
+        return appRepo.findByCandidateId(me.getId(), pageable);
     }
 
-    // Read One
-    @GetMapping("/{id}")
-    public Application getApplication(@PathVariable String id) {
-        Application existing = appRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Application not found"));
-
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        Candidate me = candidateRepo.findByEmail(email).get();
-        if (!existing.getCandidateId().equals(me.getId())) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "You do not have permission to view this application");
-        }
-        return existing;
-    }
-
-    // Update
-    @PutMapping("/{id}")
-    public Application updateApplication(
-            @PathVariable String id,
-            @Valid @RequestBody Application incoming
-    ) {
-        Application existing = appRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Application not found"));
-
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        Candidate me = candidateRepo.findByEmail(email).get();
-        if (!existing.getCandidateId().equals(me.getId())) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "You do not have permission to modify this application");
-        }
-
-        existing.setStatus(incoming.getStatus());
-        return appRepo.save(existing);
-    }
-
-    // Delete
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteApplication(@PathVariable String id) {
-        Application existing = appRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Application not found"));
-
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        Candidate me = candidateRepo.findByEmail(email).get();
-        if (!existing.getCandidateId().equals(me.getId())) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "You do not have permission to withdraw this application");
-        }
-
-        appRepo.delete(existing);
-        return ResponseEntity.noContent().build();
-    }
 }

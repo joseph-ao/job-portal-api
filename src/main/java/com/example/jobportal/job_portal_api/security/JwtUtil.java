@@ -11,9 +11,8 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    // generate a strong 256-bit key for HS256
     private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long EXPIRATION = 1000 * 60 * 60; // 1 hour
+    private final long EXPIRATION = 1000 * 60 * 60;
 
     public String generateToken(String username, String role) {
         return Jwts.builder()
@@ -21,7 +20,7 @@ public class JwtUtil {
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(SECRET_KEY)    // no WeakKeyException now
+                .signWith(SECRET_KEY)
                 .compact();
     }
 
